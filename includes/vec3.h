@@ -1,11 +1,11 @@
-#ifndef VEC3_H
-#define VEC3_H
+#pragma once
 
 #include <cmath>
 #include <iostream>
 
 using std::sqrt;
 
+// representation of a vector in 3 dimensions (x,y,z)
 class vec3 {
 public:
     double e[3];
@@ -87,19 +87,21 @@ inline vec3 operator/(vec3 v, double t) {
     return (1 / t) * v;
 }
 
+// dot product
 inline double dot(const vec3& u, const vec3& v) {
     return u.e[0] * v.e[0]
         + u.e[1] * v.e[1]
         + u.e[2] * v.e[2];
 }
 
+// cross product
 inline vec3 cross(const vec3& u, const vec3& v) {
     return vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1],
         u.e[2] * v.e[0] - u.e[0] * v.e[2],
         u.e[0] * v.e[1] - u.e[1] * v.e[0]);
 }
 
+// normalize to length 1
 inline vec3 unit_vector(vec3 v) {
     return v / v.length();
 }
-#endif
