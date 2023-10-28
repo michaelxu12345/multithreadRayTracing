@@ -5,7 +5,7 @@
 
 using std::sqrt;
 
-// representation of a vector in 3 dimensions (x,y,z)
+// Representation of a vector in 3 dimensions (x,y,z)
 class vec3 {
 public:
     double e[3];
