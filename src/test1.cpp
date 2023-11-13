@@ -1,5 +1,4 @@
 #include "common.h"
-
 #include "color.h"
 #include "hittable.h"
 #include "hittable_list.h"
@@ -11,7 +10,7 @@
 
 color ray_color(const ray& r, const hittable& world) {
     hit_record rec;
-    if (world.hit(r, 0, infinity, rec)) {
+    if (world.hit(r, interval(0, infinity), rec)) {
         return 0.5 * (rec.normal + color(1, 1, 1));
     }
 
@@ -22,7 +21,7 @@ color ray_color(const ray& r, const hittable& world) {
 
 int main() {
     double aspect_ratio = 16.0 / 9.0;
-    int image_width = 400;
+    int image_width = 1600;
 
     // Calculate the image height, and ensure that it's at least 1.
     int image_height = static_cast<int>(image_width / aspect_ratio);
@@ -33,7 +32,9 @@ int main() {
     hittable_list world;
 
     world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));
-    world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));
+    world.add(make_shared<sphere>(point3(1, -0.75, -1), 0.2));
+    world.add(make_shared<sphere>(point3(-1, -0.75, -1), 0.2));
+    world.add(make_shared<sphere>(point3(0, -100.9, -1), 100));
 
     // camera
     double focal_length = 1.0;
@@ -57,7 +58,6 @@ int main() {
     // Render
     std::cerr << "Image width height:" << image_width << " " << image_height << std::endl;
     std::cerr << "Viewport width height:" << viewport_width << " " << viewport_height << std::endl;
-
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
 
     for (int j = 0; j < image_height; ++j) {
