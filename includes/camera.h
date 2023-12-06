@@ -4,12 +4,17 @@
 #include "color.h"
 #include <iostream>
 #include "hittable.h"
+#include "hittable_list.h"
+#include "safequeue.h"
+#include <thread>
 
 class camera {
 public:
     double aspect_ratio = 1.0;  // Ratio of image width over height
     int    image_width = 100;  // Rendered image width in pixel count
-    int    samples_per_pixel = 10;
+    int    samples_per_pixel = 10; // random samples per pixel for antialiasing
+    int    max_depth = 10;    // max number of ray bounces into scene
+    int    num_threads = 10;  // number of threads
 
     void render(const hittable& world) {
         initialize();
@@ -22,11 +27,11 @@ public:
                 color pixel_color(0, 0, 0);
                 for (int sample = 0; sample < samples_per_pixel; sample++) {
                     ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, world);
+                    pixel_color += ray_color(r, max_depth, world);
                 }
                 if (samples_per_pixel == 0) {
                     ray r = get_single_ray(i, j);
-                    pixel_color += ray_color(r, world);
+                    pixel_color += ray_color(r, max_depth, world);
                 }
                 write_color(std::cout, pixel_color, samples_per_pixel);
             }
@@ -35,12 +40,70 @@ public:
         std::clog << "\rDone.                 \n";
     }
 
+    void render_multithreaded(const hittable_list& world) {
+        initialize();
+        image = std::vector<std::vector<color>>(
+            image_width, std::vector<color>(image_height)
+        );
+        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+        for (int j = 0; j < image_height; ++j) {
+            for (int i = 0; i < image_width; ++i) {
+                queue.enqueue(std::make_pair(i, j));
+            }
+        }
+        queue.enqueue(std::make_pair(-1, -1));
+
+        for (int i = 0; i < num_threads; i++) {
+            threads.push_back(std::thread(&camera::render_colors, this, world));
+        }
+        std::clog << "threads started" << std::endl;
+        for (int i = 0; i < num_threads; i++) {
+            threads[i].join();
+        }
+
+        for (int j = 0; j < image_height; ++j) {
+            for (int i = 0; i < image_width; ++i) {
+                write_color(std::cout, image[i][j], samples_per_pixel);
+            }
+        }
+        std::clog << "\rDone.                 \n";
+    }
+
+
+
 private:
     int    image_height;   // Rendered image height
     point3 center;         // Camera center
     point3 pixel00_loc;    // Location of pixel 0, 0
     vec3   pixel_delta_u;  // Offset to pixel to the right
     vec3   pixel_delta_v;  // Offset to pixel below
+    SafeQueue<std::pair<int, int>> queue; // Thread safe queue
+    std::vector<std::thread> threads;
+    std::vector<std::vector<color>> image;
+
+    void render_colors(const hittable_list& world) {
+        while (true) {
+            std::pair<int, int> current = queue.dequeue();
+            int i = current.first;
+            int j = current.second;
+            if (i == -1) {
+                queue.enqueue(std::make_pair(-1, -1));
+                break;
+            }
+            color pixel_color(0, 0, 0);
+            for (int sample = 0; sample < samples_per_pixel; sample++) {
+                ray r = get_ray(i, j);
+                pixel_color += ray_color(r, max_depth, world);
+            }
+            if (samples_per_pixel == 0) {
+                ray r = get_single_ray(i, j);
+                pixel_color += ray_color(r, max_depth, world);
+            }
+            image[i][j] = pixel_color;
+            std::clog << "\rFinished: " << i << ' ' << j << std::flush;
+
+        }
+    }
 
     void initialize() {
         image_height = static_cast<int>(image_width / aspect_ratio);
@@ -98,10 +161,17 @@ private:
         return (px * pixel_delta_u) + (py * pixel_delta_v);
     }
 
-    color ray_color(const ray& r, const hittable& world) {
+    color ray_color(const ray& r, int depth, const hittable& world) {
         hit_record rec;
-        if (world.hit(r, interval(0, infinity), rec)) {
-            return 0.5 * (rec.normal + color(1, 1, 1));
+
+        // if past depth, don't gather more light
+        if (depth <= 0) {
+            return color(0, 0, 0);
+        }
+
+        if (world.hit(r, interval(0.001, infinity), rec)) {
+            vec3 direction = rec.normal + random_unit_vector();
+            return 0.5 * ray_color(ray(rec.p, direction), depth - 1, world);
         }
 
         vec3 unit_direction = unit_vector(r.direction());

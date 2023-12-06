@@ -13,8 +13,10 @@ int main() {
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 400;
-    cam.samples_per_pixel = 000;
-    // set to 0 for no antialiasing
+    cam.samples_per_pixel = 100;  // set to 0 for no antialiasing
+    cam.max_depth = 50;
+    cam.num_threads = 10;
 
-    cam.render(world);
+    cam.render_multithreaded(world);
+    // cam.render(world);
 }
