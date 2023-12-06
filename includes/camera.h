@@ -56,7 +56,7 @@ public:
         for (int i = 0; i < num_threads; i++) {
             threads.push_back(std::thread(&camera::render_colors, this, world));
         }
-        std::clog << "threads started" << std::endl;
+        std::clog << "Threads started" << std::endl;
         for (int i = 0; i < num_threads; i++) {
             threads[i].join();
         }
@@ -100,7 +100,7 @@ private:
                 pixel_color += ray_color(r, max_depth, world);
             }
             image[i][j] = pixel_color;
-            std::clog << "\rFinished: " << i << ' ' << j << std::flush;
+            // std::clog << "\rFinished: " << i << ' ' << j << std::flush;
 
         }
     }

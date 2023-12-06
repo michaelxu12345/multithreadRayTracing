@@ -3,7 +3,7 @@
 #include "hittable_list.h"
 #include "sphere.h"
 
-int main() {
+int main(int argc, char* argv[]) {
     hittable_list world;
 
     world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));
@@ -15,8 +15,16 @@ int main() {
     cam.image_width = 400;
     cam.samples_per_pixel = 100;  // set to 0 for no antialiasing
     cam.max_depth = 50;
-    cam.num_threads = 10;
 
-    cam.render_multithreaded(world);
-    // cam.render(world);
+    if (argc == 1) {
+        cam.render(world);
+    }
+    else {
+        cam.num_threads = atoi(argv[1]);
+        std::cerr << "Running with " << cam.num_threads << " threads\n";
+        cam.render_multithreaded(world);
+    }
+
+
+
 }
