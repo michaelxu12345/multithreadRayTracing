@@ -2,4 +2,5 @@
 !src
 !includes
 !includes/material.h
+!src/main.cpp
 !Makefile

@@ -1,11 +1,9 @@
-CC = g++
+CC = clang++
 
 INC = -I includes/
 WARNINGS = 
-EXEC_WINDOWS = windows
-EXEC_UNIX = unix
 
-CFLAGS = $(WARNINGS) $(INC) -std=c++20
+CFLAGS = $(INC) -std=c++11
 CFLAGS_DEBUG = $(CFLAGS) -g
 
 # use @ to not show command
@@ -15,11 +13,11 @@ all: windows unix
 
 windows:
 	@echo "making windows version"
-	$(CC) $(CFLAGS) -o render.exe ./src/test1.cpp 
+	$(CC) $(CFLAGS) -o render.exe ./src/main.cpp 
 
 unix:
 	@echo "making unix version"
-	$(CC) $(CFLAGS) -o render.out ./src/test1.cpp 
+	$(CC) $(CFLAGS) -o render.out ./src/main.cpp 
 
 clean:
 	@echo "making clean"
