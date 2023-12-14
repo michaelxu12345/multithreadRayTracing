@@ -1,6 +1,4 @@
-*
-!src
-!includes
-!includes/material.h
-!src/main.cpp
-!Makefile
+image.ppm
+image1.ppm
+render.exe
+render.out
