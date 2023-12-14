@@ -1,7 +1,7 @@
 CC = g++
 
 INC = -I includes/
-WARNINGS = -Wall -Wextra -Werror
+WARNINGS = 
 EXEC_WINDOWS = windows
 EXEC_UNIX = unix
 
